@@ -79,14 +79,21 @@
         }
   
         document.body.innerHTML = `
-          <video id="video-fondo" autoplay playsinline muted webkit-playsinline style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
-          <a-scene embedded renderer="antialias: true; alpha: true" vr-mode-ui="enabled: false">
+          <a-scene embedded renderer="antialias: true; alpha: true; colorManagement: true; physicallyCorrectLights: true;" background="transparent: true" vr-mode-ui="enabled: false">
             <a-assets>
               <a-asset-item id="surface-model" src="${model}"></a-asset-item>
             </a-assets>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-            <a-entity id="model-holder" visible="false" gltf-model="#surface-model" scale="0.5 0.5 0.5"></a-entity>
+  
+            <a-entity light="type: ambient; intensity: 1"></a-entity>
+            <a-entity light="type: directional; intensity: 1.5" position="0 2 1"></a-entity>
+  
+            <a-entity id="model-holder" visible="true" gltf-model="#surface-model"
+                      material="opacity: 0.2; transparent: true" scale="0.5 0.5 0.5"></a-entity>
           </a-scene>
+  
+          <video id="video-fondo" autoplay playsinline muted webkit-playsinline
+                 style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"></video>
         `;
   
         navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
@@ -99,8 +106,8 @@
   
         setTimeout(() => {
           const model = document.getElementById("model-holder");
-          model.setAttribute("visible", "true");
           model.setAttribute("position", "0 0 -2");
+          model.setAttribute("material", "opacity: 1; transparent: false");
         }, 3000);
       };
   
