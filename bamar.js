@@ -1,7 +1,6 @@
 (function () {
     const BAMAR = (() => {
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isAndroid = /Android/.test(navigator.userAgent);
   
       const init = async (options) => {
         const mode = options.mode || "marker";
@@ -79,27 +78,29 @@
           return;
         }
   
-        if (fallback === "marker") {
-          initMarkerMode({ model, target: fallback });
-          return;
-        }
-  
-        // Default plane fallback
         document.body.innerHTML = `
-<a-scene embedded arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;" renderer="antialias: true; alpha: true" vr-mode-ui="enabled: false">
-            <a-assets><a-asset-item id="surface-model" src="${model}"></a-asset-item></a-assets>
-            <a-camera position="0 0 0" look-controls-enabled="false"></a-camera>
-  
-            <a-entity id="floor" geometry="primitive: plane; height: 4; width: 4" rotation="-90 0 0" material="opacity: 0"></a-entity>
-  
+          <video id="video-fondo" autoplay playsinline muted webkit-playsinline style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
+          <a-scene embedded renderer="antialias: true; alpha: true" vr-mode-ui="enabled: false">
+            <a-assets>
+              <a-asset-item id="surface-model" src="${model}"></a-asset-item>
+            </a-assets>
+            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
             <a-entity id="model-holder" visible="false" gltf-model="#surface-model" scale="0.5 0.5 0.5"></a-entity>
           </a-scene>
         `;
   
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+          .then(stream => {
+            const video = document.getElementById('video-fondo');
+            video.srcObject = stream;
+            video.onloadeddata = () => video.play();
+          })
+          .catch(err => console.error('❌ Error al activar cámara:', err));
+  
         setTimeout(() => {
           const model = document.getElementById("model-holder");
           model.setAttribute("visible", "true");
-          model.setAttribute("position", "0 0 0");
+          model.setAttribute("position", "0 0 -2");
         }, 3000);
       };
   
@@ -110,4 +111,3 @@
       window.BAMAR = BAMAR;
     }
   })();
-  
